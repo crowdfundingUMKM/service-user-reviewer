@@ -53,7 +53,17 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 
 	formatter := reviewer.FormatterUser(newUser, token)
 
-	response := helper.APIResponse("Account has been registered but you must wait admin or review to active your account", http.StatusOK, "success", formatter)
+	if formatter.StatusAccount == "active" {
+		response := helper.APIResponse("Account has been active", http.StatusOK, "success", formatter)
+		c.JSON(http.StatusOK, response)
+		return
+	}
+
+	data := gin.H{
+		"status": "Success create account, but you must wait admin to active your account",
+	}
+
+	response := helper.APIResponse("Account has been registered but you must wait admin or review to active your account", http.StatusOK, "success", data)
 
 	c.JSON(http.StatusOK, response)
 }
