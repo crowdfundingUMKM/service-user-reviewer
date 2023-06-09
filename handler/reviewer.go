@@ -54,7 +54,7 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 	formatter := reviewer.FormatterUser(newUser, token)
 
 	if formatter.StatusAccount == "active" {
-		response := helper.APIResponse("Account has been active", http.StatusOK, "success", formatter)
+		response := helper.APIResponse("Account has been registered and active", http.StatusOK, "success", formatter)
 		c.JSON(http.StatusOK, response)
 		return
 	}
