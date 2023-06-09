@@ -42,7 +42,7 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 	// generate token
-	token, err := h.authService.GenerateToken(newUser.ID)
+	token, err := h.authService.GenerateToken(newUser.UnixID)
 	if err != nil {
 		if err != nil {
 			response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)

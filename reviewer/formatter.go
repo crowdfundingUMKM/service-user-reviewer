@@ -2,7 +2,7 @@ package reviewer
 
 type UserReviewerFormatter struct {
 	ID                    int    `json:"id"`
-	UserID                string `json:"user_id"`
+	UnixID                string `json:"unix_id"`
 	Name                  string `json:"name"`
 	Email                 string `json:"email"`
 	EducationalBackground string `json:"educational_background"`
@@ -15,7 +15,7 @@ type UserReviewerFormatter struct {
 func FormatterUser(user User, token string) UserReviewerFormatter {
 	formatter := UserReviewerFormatter{
 		ID:                    user.ID,
-		UserID:                user.UserID,
+		UnixID:                user.UnixID,
 		Name:                  user.Name,
 		Email:                 user.Email,
 		EducationalBackground: user.EducationalBackground,
