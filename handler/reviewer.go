@@ -60,7 +60,7 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"status": "Success create account, but you must wait admin to active your account",
+		"status": "Account has been registered, but you must wait admin to active your account",
 	}
 
 	response := helper.APIResponse("Account has been registered but you must wait admin or review to active your account", http.StatusOK, "success", data)
