@@ -21,7 +21,7 @@ func NewService(repository Repository) *service {
 
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user := User{}
-	user.UReviewerID = uuid.New().String()[:12]
+	user.UserID = uuid.New().String()[:12]
 	user.Name = input.Name
 	user.Email = input.Email
 	user.EducationalBackground = input.EducationalBackground

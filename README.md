@@ -6,7 +6,7 @@
 - [] GET Service status
 
 - User req
-- [] POST Register
+- [x] POST Register
 - [] POST Login
 - [] POST Check email
 - [] POST Check Phone
