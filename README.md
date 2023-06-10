@@ -2,14 +2,17 @@
 
 
 - Admin req
+
+- [] CORS Config
+
 - [] ~GET Log service
 - [] GET Service status
 
 - User req
 - [x] POST Register
+    - [] POST Check email
+    - [] POST Check Phone
 - [] POST Login
-- [] POST Check email
-- [] POST Check Phone
 
 - Dashboard
 - [ ] GET User Profile
