@@ -22,5 +22,27 @@ INSERT INTO `users` (`id`, `unix_id`,`name`, `email`,`educational_background`, `
 
 -- Indexes for table `users`
 --
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+-- ALTER TABLE `users`
+--   ADD PRIMARY KEY (`id`);
+
+-- Remove token from table users
+-- DELIMITER //
+
+-- CREATE EVENT delete_expired_tokens
+-- ON SCHEDULE EVERY 1 HOUR
+-- DO
+-- BEGIN
+--     DELETE FROM users
+--     WHERE token IS NOT NULL
+--     AND created_at < NOW() - INTERVAL 2 DAY;
+-- END //
+
+-- DELIMITER ;
+
+-- Backup database
+-- SELECT *
+-- INTO OUTFILE '/path/to/backup/users_backup.csv'
+-- FIELDS TERMINATED BY ','
+-- ENCLOSED BY '"'
+-- LINES TERMINATED BY '\n'
+-- FROM users;
