@@ -1,4 +1,4 @@
-package reviewer
+package core
 
 import "gorm.io/gorm"
 

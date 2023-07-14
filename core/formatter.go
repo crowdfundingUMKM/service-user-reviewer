@@ -1,4 +1,4 @@
-package reviewer
+package core
 
 type UserReviewerFormatter struct {
 	ID                    int    `json:"id"`

@@ -6,9 +6,9 @@ import (
 	"os"
 	"service-user-reviewer/auth"
 	"service-user-reviewer/config"
+	"service-user-reviewer/core"
 	"service-user-reviewer/database"
 	"service-user-reviewer/handler"
-	"service-user-reviewer/reviewer"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -25,10 +25,10 @@ func main() {
 	// config.InitLog()
 	// setup repository
 	db := database.NewConnectionDB()
-	userReviewerRepository := reviewer.NewRepository(db)
+	userReviewerRepository := core.NewRepository(db)
 
 	// setup service
-	userReviewerService := reviewer.NewService(userReviewerRepository)
+	userReviewerService := core.NewService(userReviewerRepository)
 	authService := auth.NewService()
 
 	// setup handler

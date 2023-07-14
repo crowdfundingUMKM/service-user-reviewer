@@ -3,18 +3,18 @@ package handler
 import (
 	"net/http"
 	"service-user-reviewer/auth"
+	"service-user-reviewer/core"
 	"service-user-reviewer/helper"
-	"service-user-reviewer/reviewer"
 
 	"github.com/gin-gonic/gin"
 )
 
 type userReviewerHandler struct {
-	userService reviewer.Service
+	userService core.Service
 	authService auth.Service
 }
 
-func NewUserHandler(userService reviewer.Service, authService auth.Service) *userReviewerHandler {
+func NewUserHandler(userService core.Service, authService auth.Service) *userReviewerHandler {
 	return &userReviewerHandler{userService, authService}
 }
 
@@ -23,7 +23,7 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 	// map input dari user ke struct RegisterUserInput
 	// struct di atas kita passing sebagai parameter service
 
-	var input reviewer.RegisterUserInput
+	var input core.RegisterUserInput
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -51,7 +51,7 @@ func (h *userReviewerHandler) RegisterUser(c *gin.Context) {
 		}
 	}
 
-	formatter := reviewer.FormatterUser(newUser, token)
+	formatter := core.FormatterUser(newUser, token)
 
 	if formatter.StatusAccount == "active" {
 		response := helper.APIResponse("Account has been registered and active", http.StatusOK, "success", formatter)
