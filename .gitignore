@@ -23,3 +23,6 @@ go.sum# If you prefer the allow list template instead of the deny list, see comm
 
 # Go workspace file
 go.work
+
+# gcp secret
+keys.json

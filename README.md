@@ -1,25 +1,6 @@
 ### to do service-user-reviewer
 
 
-- Admin req
-
-- [x] CORS Config
-
-- [] ~GET Log service
-- [] GET Service status
-
-- User req
-- [x] POST Register
-    - [] POST Check email
-    - [] POST Check Phone
-- [] POST Login
-
-- Dashboard
-- [ ] GET User Profile
-- [ ] POST Update_avatar
-- [ ] PUT Update User profile
-
-- [ ] POST Logout
 
 # Info
 
