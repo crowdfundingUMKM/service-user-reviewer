@@ -9,6 +9,7 @@ import (
 	"service-user-reviewer/core"
 	"service-user-reviewer/database"
 	"service-user-reviewer/handler"
+	"service-user-reviewer/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,20 @@ func main() {
 
 	// Rounting admin
 	api.POST("/register_reviewer", userHandler.RegisterUser)
+	api.POST("/login_reviewer", userHandler.Login)
+	api.GET("/email_check", userHandler.CheckEmailAvailability)
+	api.GET("/phone_check", userHandler.CheckPhoneAvailability)
+
+	api.GET("/get_user", middleware.AuthMiddleware(authService, userReviewerService), userHandler.GetUser)
+
+	api.PUT("/update_profile", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UpdateUser)
+	// //make update password user by unix_id
+	// api.PUT("/update_password", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UpdatePassword)
+	// //make create image profile user by unix_id this for update -> update same
+	// api.POST("/upload_avatar", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UploadAvatar)
+
+	// // make logout user by unix_id
+	// api.DELETE("/logout_reviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.LogoutUser)
 
 	url := fmt.Sprintf("%s:%s", os.Getenv("SERVICE_HOST"), os.Getenv("SERVICE_PORT"))
 	router.Run(url)

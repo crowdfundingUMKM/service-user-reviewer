@@ -53,11 +53,11 @@ func AuthMiddleware(authService auth.Service, userService core.Service) gin.Hand
 		}
 
 		// if account is not active
-		// if user.StatusAccount == "deactive" {
-		// 	response := helper.APIResponse("Unauthorized account deactive", http.StatusUnauthorized, "error", nil)
-		// 	c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-		// 	return
-		// }
+		if user.StatusAccount == "deactive" {
+			response := helper.APIResponse("Unauthorized account deactive", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
 
 		c.Set("currentUser", user)
 		c.Next()

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"os"
 
 	"github.com/google/uuid"
@@ -8,7 +9,14 @@ import (
 )
 
 type Service interface {
+	GetUserByUnixID(UnixID string) (User, error)
+
 	RegisterUser(input RegisterUserInput) (User, error)
+	Login(input LoginInput) (User, error)
+	SaveToken(UnixID string, Token string) (User, error)
+	IsEmailAvailable(input CheckEmailInput) (bool, error)
+	IsPhoneAvailable(input CheckPhoneInput) (bool, error)
+	UpdateUserByUnixID(UnixID string, input UpdateUserInput) (User, error)
 }
 
 type service struct {
@@ -26,7 +34,8 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user.Email = input.Email
 	user.EducationalBackground = input.EducationalBackground
 	user.Phone = input.Phone
-	user.Description = input.Description
+	user.BioUser = input.BioUser
+	user.AvatarFileName = "/crwdstorage/avatar_reviewer/dafault-avatar.png"
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
 
@@ -43,4 +52,109 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 		return newUser, err
 	}
 	return newUser, nil
+}
+
+func (s *service) Login(input LoginInput) (User, error) {
+	email := input.Email
+	password := input.Password
+
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return user, err
+	}
+	if user.ID == 0 {
+		return user, errors.New("No user found on that email")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (s *service) GetUserByUnixID(UnixID string) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.UnixID == "" {
+		return user, errors.New("No user found on with that ID")
+	}
+
+	return user, nil
+}
+
+func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
+	email := input.Email
+
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return false, err
+	}
+
+	if user.ID == 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (s *service) IsPhoneAvailable(input CheckPhoneInput) (bool, error) {
+	phone := input.Phone
+
+	user, err := s.repository.FindByPhone(phone)
+	if err != nil {
+		return false, err
+	}
+
+	if user.UnixID == "" {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// save token to database
+func (s *service) SaveToken(UnixID string, Token string) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	user.Token = Token
+	_, err = s.repository.UpdateToken(user)
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (s *service) UpdateUserByUnixID(UnixID string, input UpdateUserInput) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.UnixID == "" {
+		return user, errors.New("No user found on with that ID")
+	}
+
+	user.Name = input.Name
+	user.Phone = input.Phone
+	user.EducationalBackground = input.EducationalBackground
+	user.BioUser = input.BioUser
+	user.Address = input.Address
+	user.Country = input.Country
+	user.FBLink = input.FBLink
+	user.IGLink = input.IGLink
+	user.LinkedLink = input.LinkedLink
+
+	updatedUser, err := s.repository.Update(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
 }

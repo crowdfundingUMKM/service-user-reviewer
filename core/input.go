@@ -5,6 +5,31 @@ type RegisterUserInput struct {
 	Email                 string `json:"email" binding:"required,email"`
 	EducationalBackground string `json:"educational_background" binding:"required"`
 	Phone                 string `json:"phone" binding:"required"`
-	Description           string `json:"description"`
+	BioUser               string `json:"bio_user" binding:"required"`
 	Password              string `json:"password" binding:"required"`
+}
+
+type LoginInput struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+type CheckEmailInput struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type CheckPhoneInput struct {
+	Phone string `json:"phone" binding:"required"`
+}
+
+type UpdateUserInput struct {
+	Name                  string `json:"name" `
+	Phone                 string `json:"phone" `
+	EducationalBackground string `json:"educational_background" `
+	BioUser               string `json:"bio_user" `
+	Address               string `json:"address" `
+	Country               string `json:"country" `
+	FBLink                string `json:"fb_link" `
+	IGLink                string `json:"ig_link" `
+	LinkedLink            string `json:"linked_link" `
 }
