@@ -33,3 +33,8 @@ type UpdateUserInput struct {
 	IGLink                string `json:"ig_link" `
 	LinkedLink            string `json:"linked_link" `
 }
+
+type UpdatePasswordInput struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}

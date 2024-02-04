@@ -11,6 +11,9 @@ type Repository interface {
 	FindByPhone(phone string) (User, error)
 	UpdateToken(user User) (User, error)
 	Update(user User) (User, error)
+
+	UpdatePassword(user User) (User, error)
+	UploadAvatarImage(user User) (User, error)
 }
 
 type repository struct {
@@ -76,6 +79,26 @@ func (r *repository) Update(user User) (User, error) {
 
 func (r *repository) UpdateToken(user User) (User, error) {
 	err := r.db.Model(&user).Update("token", user.Token).Error
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *repository) UpdatePassword(user User) (User, error) {
+	err := r.db.Model(&user).Update("password_hash", user.PasswordHash).Error
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *repository) UploadAvatarImage(user User) (User, error) {
+	err := r.db.Model(&user).Updates(User{AvatarFileName: user.AvatarFileName}).Error
 
 	if err != nil {
 		return user, err

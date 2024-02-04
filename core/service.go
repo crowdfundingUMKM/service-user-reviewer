@@ -16,7 +16,14 @@ type Service interface {
 	SaveToken(UnixID string, Token string) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
 	IsPhoneAvailable(input CheckPhoneInput) (bool, error)
+
+	//
+	UpdatePasswordByUnixID(UnixID string, input UpdatePasswordInput) (User, error)
 	UpdateUserByUnixID(UnixID string, input UpdateUserInput) (User, error)
+
+	SaveAvatar(UnixID string, fileLocation string) (User, error)
+
+	DeleteToken(UnixID string) (User, error)
 }
 
 type service struct {
@@ -152,6 +159,74 @@ func (s *service) UpdateUserByUnixID(UnixID string, input UpdateUserInput) (User
 	user.LinkedLink = input.LinkedLink
 
 	updatedUser, err := s.repository.Update(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
+}
+
+func (s *service) UpdatePasswordByUnixID(UnixID string, input UpdatePasswordInput) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.UnixID == "" {
+		return user, errors.New("No user found on with that ID")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.OldPassword))
+
+	if err != nil {
+		return user, err
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.MinCost)
+
+	if err != nil {
+		return user, err
+	}
+
+	user.PasswordHash = string(passwordHash)
+
+	updatedUser, err := s.repository.UpdatePassword(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
+}
+
+func (s *service) SaveAvatar(UnixID string, fileLocation string) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	if err != nil {
+		return user, err
+	}
+
+	user.AvatarFileName = fileLocation
+
+	updatedUser, err := s.repository.UploadAvatarImage(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
+}
+
+func (s *service) DeleteToken(UnixID string) (User, error) {
+	user, err := s.repository.FindByUnixID(UnixID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.UnixID == "" {
+		return user, errors.New("No user found on with that ID")
+	}
+
+	user.Token = ""
+
+	updatedUser, err := s.repository.UpdateToken(user)
 	if err != nil {
 		return updatedUser, err
 	}

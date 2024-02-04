@@ -55,13 +55,17 @@ func main() {
 	api.GET("/get_user", middleware.AuthMiddleware(authService, userReviewerService), userHandler.GetUser)
 
 	api.PUT("/update_profile", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UpdateUser)
-	// //make update password user by unix_id
-	// api.PUT("/update_password", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UpdatePassword)
-	// //make create image profile user by unix_id this for update -> update same
-	// api.POST("/upload_avatar", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UploadAvatar)
 
-	// // make logout user by unix_id
-	// api.DELETE("/logout_reviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.LogoutUser)
+	api.PUT("/update_password", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UpdatePassword)
+	//make create image profile user by unix_id this for update -> update same
+	api.POST("/upload_avatar", middleware.AuthMiddleware(authService, userReviewerService), userHandler.UploadAvatar)
+
+	// make logout user
+	api.DELETE("/logout_reviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.LogoutUser)
+
+	// Notif route
+	// api.POST("/report_to_admin", middleware.AuthMiddleware(authService, userCampaignService), notifHandler.ReportToAdmin)
+	// api.GET("/admin/get_notif_admin", middleware.AuthApiAdminMiddleware(authService, userCampaignService), notifHandler.GetNotifToAdmin)
 
 	url := fmt.Sprintf("%s:%s", os.Getenv("SERVICE_HOST"), os.Getenv("SERVICE_PORT"))
 	router.Run(url)
