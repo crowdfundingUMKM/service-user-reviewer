@@ -4,6 +4,8 @@ import "gorm.io/gorm"
 
 // KONTRAK
 type Repository interface {
+	UpdateStatusAccount(user User) (User, error)
+
 	Save(user User) (User, error)
 
 	FindByUnixID(unix_id string) (User, error)
@@ -22,6 +24,21 @@ type repository struct {
 
 func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
+}
+
+func (r *repository) UpdateStatusAccount(user User) (User, error) {
+	// update status_account and update_by_admin
+
+	err := r.db.Model(&user).Updates(User{
+		StatusAccount: user.StatusAccount,
+		UpdateIdAdmin: user.UpdateIdAdmin,
+	}).Error
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
 
 func (r *repository) Save(user User) (User, error) {

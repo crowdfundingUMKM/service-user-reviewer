@@ -47,6 +47,22 @@ func main() {
 	api := router.Group("api/v1")
 
 	// Rounting admin
+	// admin request -> service user admin
+	api.GET("/admin/log_service_toAdmin/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.GetLogtoAdmin)
+	api.GET("/admin/service_status/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.ServiceHealth)
+	api.PUT("/admin/deactive_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.DeactiveUser)
+	api.PUT("/admin/active_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.ActiveUser)
+
+	// make endpoint get all user by admin
+	// api.GET("/admin/get_all_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.GetAllUserData)
+
+	// route give information to user about admin
+	// api.GET("/campaign/getUserReviewerID/:unix_id", userHandler.GetInfoAdminID)
+
+	// verify token
+	api.GET("/verifyTokenReviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.VerifyToken)
+
+	// Rounting user
 	api.POST("/register_reviewer", userHandler.RegisterUser)
 	api.POST("/login_reviewer", userHandler.Login)
 	api.GET("/email_check", userHandler.CheckEmailAvailability)

@@ -3,15 +3,18 @@ package handler
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	api_admin "service-user-reviewer/api/admin"
 	"service-user-reviewer/auth"
 	"service-user-reviewer/core"
 	"service-user-reviewer/helper"
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 	"google.golang.org/appengine"
 )
@@ -27,6 +30,235 @@ var (
 
 func NewUserHandler(userService core.Service, authService auth.Service) *userReviewerHandler {
 	return &userReviewerHandler{userService, authService}
+}
+
+func (h *userReviewerHandler) GetLogtoAdmin(c *gin.Context) {
+	// check id admin
+	adminID := c.Param("admin_id")
+	adminInput := api_admin.AdminIdInput{UnixID: adminID}
+	getAdminValueId, err := api_admin.GetAdminId(adminInput)
+
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
+
+	if c.Param("admin_id") == getAdminValueId && currentAdmin.UnixAdmin == getAdminValueId {
+		content, err := ioutil.ReadFile("./tmp/gin.log")
+		if err != nil {
+			response := helper.APIResponse("Failed to get log", http.StatusBadRequest, "error", nil)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+		// download with browser
+		if c.Query("download") == "true" {
+			c.Header("Content-Disposition", "attachment; filename=gin.log")
+			c.Data(http.StatusOK, "application/octet-stream", content)
+			return
+		}
+		// show in browser
+		c.String(http.StatusOK, string(content))
+	} else {
+		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+}
+
+func (h *userReviewerHandler) ServiceHealth(c *gin.Context) {
+	// check env open or not
+	errEnv := godotenv.Load()
+	if errEnv != nil {
+		response := helper.APIResponse("Failed to get env for service campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	adminID := c.Param("admin_id")
+	adminInput := api_admin.AdminIdInput{UnixID: adminID}
+	getAdminValueId, err := api_admin.GetAdminId(adminInput)
+
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// middleware api admin
+	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
+
+	if c.Param("admin_id") != getAdminValueId && currentAdmin.UnixAdmin != getAdminValueId {
+		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	envVars := []string{
+		"ADMIN_ID",
+		"DB_USER",
+		"DB_PASS",
+		"DB_NAME",
+		"DB_PORT",
+		"INSTANCE_HOST",
+		"SERVICE_HOST",
+		"SERVICE_PORT",
+		"JWT_SECRET",
+		"STATUS_ACCOUNT",
+	}
+
+	data := make(map[string]interface{})
+	for _, key := range envVars {
+		data[key] = os.Getenv(key)
+	}
+
+	errService := c.Errors
+	if errService != nil {
+		response := helper.APIResponse("Service campaign is not running", http.StatusInternalServerError, "error", nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	response := helper.APIResponse("Service campaign is running", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userReviewerHandler) DeactiveUser(c *gin.Context) {
+	var input core.DeactiveUserInput
+	// check input from user
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("User Not Found", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// cheack id from get param and fetch data from service admin to check id admin and status account admin
+	// var adminInput campaign.AdminIdInput
+	adminID := c.Param("admin_id")
+	adminInput := api_admin.AdminIdInput{UnixID: adminID}
+	getAdminValueId, err := api_admin.GetAdminId(adminInput)
+
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// middleware api admin
+	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
+
+	// check id admin
+	// adminId := getAdminValueId
+	if c.Param("admin_id") == getAdminValueId && currentAdmin.UnixAdmin == getAdminValueId {
+		// get id user
+
+		// deactive user
+		deactive, err := h.userService.DeactivateAccountUser(input, currentAdmin.UnixAdmin)
+
+		data := gin.H{
+			"success_deactive": deactive,
+		}
+
+		if err != nil {
+			response := helper.APIResponse("Failed to deactive user", http.StatusBadRequest, "error", data)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+		response := helper.APIResponse("User has been deactive", http.StatusOK, "success", data)
+		c.JSON(http.StatusOK, response)
+	} else {
+		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+}
+
+func (h *userReviewerHandler) ActiveUser(c *gin.Context) {
+	var input core.DeactiveUserInput
+	// check input from user
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("User Not Found", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// cheack id from get param and fetch data from service admin to check id admin and status account admin
+	// var adminInput campaign.AdminIdInput
+	adminID := c.Param("admin_id")
+	adminInput := api_admin.AdminIdInput{UnixID: adminID}
+	getAdminValueId, err := api_admin.GetAdminId(adminInput)
+
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// middleware api admin
+	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
+
+	// check id admin
+	// adminId := getAdminValueId
+	if c.Param("admin_id") == getAdminValueId && currentAdmin.UnixAdmin == getAdminValueId {
+		// get id user
+
+		// deactive user
+		active, err := h.userService.ActivateAccountUser(input, currentAdmin.UnixAdmin)
+
+		data := gin.H{
+			"success_active": active,
+		}
+
+		if err != nil {
+			response := helper.APIResponse("Failed to active user", http.StatusBadRequest, "error", data)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+		response := helper.APIResponse("User has been active", http.StatusOK, "success", data)
+		c.JSON(http.StatusOK, response)
+	} else {
+		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+}
+
+func (h *userReviewerHandler) VerifyToken(c *gin.Context) {
+	currentUser := c.MustGet("currentUser").(core.User)
+
+	// check f account deactive
+	if currentUser.StatusAccount == "deactive" {
+		errorMessage := gin.H{"errors": "Your account is deactive by admin"}
+		response := helper.APIResponse("Your token failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	// if you logout you can't get user
+	if currentUser.Token == "" {
+		errorMessage := gin.H{"errors": "Your account is logout"}
+		response := helper.APIResponse("Your token failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"success":          "Your token is valid",
+		"user_reviewer_id": currentUser.UnixID,
+		"name":             currentUser.Name,
+		"email":            currentUser.Email,
+	}
+
+	response := helper.APIResponse("Successfuly get user by middleware", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *userReviewerHandler) RegisterUser(c *gin.Context) {

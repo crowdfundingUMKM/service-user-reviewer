@@ -9,6 +9,9 @@ import (
 )
 
 type Service interface {
+	DeactivateAccountUser(input DeactiveUserInput, adminId string) (bool, error)
+	ActivateAccountUser(input DeactiveUserInput, adminId string) (bool, error)
+
 	GetUserByUnixID(UnixID string) (User, error)
 
 	RegisterUser(input RegisterUserInput) (User, error)
@@ -32,6 +35,52 @@ type service struct {
 
 func NewService(repository Repository) *service {
 	return &service{repository}
+}
+
+func (s *service) DeactivateAccountUser(input DeactiveUserInput, adminId string) (bool, error) {
+	// fin user by unix id
+	user, err := s.repository.FindByUnixID(input.UnixID)
+	if err != nil {
+		return false, err
+	}
+	if adminId == "" {
+		return false, errors.New("Admin ID is empty")
+	}
+	user.UpdateIdAdmin = adminId
+	user.StatusAccount = "deactive"
+	_, err = s.repository.UpdateStatusAccount(user)
+
+	if err != nil {
+		return false, err
+	}
+
+	if user.UnixID == "" {
+		return true, nil
+	}
+	return true, nil
+}
+
+func (s *service) ActivateAccountUser(input DeactiveUserInput, adminId string) (bool, error) {
+	// fin user by unix id
+	user, err := s.repository.FindByUnixID(input.UnixID)
+	if err != nil {
+		return false, err
+	}
+	if adminId == "" {
+		return false, errors.New("Admin ID is empty")
+	}
+	user.UpdateIdAdmin = adminId
+	user.StatusAccount = "active"
+	_, err = s.repository.UpdateStatusAccount(user)
+
+	if err != nil {
+		return false, err
+	}
+
+	if user.UnixID == "" {
+		return true, nil
+	}
+	return true, nil
 }
 
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
