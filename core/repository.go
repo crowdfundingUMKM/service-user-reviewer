@@ -4,6 +4,8 @@ import "gorm.io/gorm"
 
 // KONTRAK
 type Repository interface {
+	GetAllUser() ([]User, error)
+
 	UpdateStatusAccount(user User) (User, error)
 
 	Save(user User) (User, error)
@@ -24,6 +26,18 @@ type repository struct {
 
 func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
+}
+
+func (r *repository) GetAllUser() ([]User, error) {
+	var user []User
+
+	err := r.db.Find(&user).Error
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
 
 func (r *repository) UpdateStatusAccount(user User) (User, error) {

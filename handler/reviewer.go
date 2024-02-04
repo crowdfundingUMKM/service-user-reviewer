@@ -72,7 +72,7 @@ func (h *userReviewerHandler) ServiceHealth(c *gin.Context) {
 	// check env open or not
 	errEnv := godotenv.Load()
 	if errEnv != nil {
-		response := helper.APIResponse("Failed to get env for service campaign", http.StatusBadRequest, "error", nil)
+		response := helper.APIResponse("Failed to get env for service reviewer", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -116,11 +116,11 @@ func (h *userReviewerHandler) ServiceHealth(c *gin.Context) {
 
 	errService := c.Errors
 	if errService != nil {
-		response := helper.APIResponse("Service campaign is not running", http.StatusInternalServerError, "error", nil)
+		response := helper.APIResponse("Service reviewer is not running", http.StatusInternalServerError, "error", nil)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	response := helper.APIResponse("Service campaign is running", http.StatusOK, "success", data)
+	response := helper.APIResponse("Service reviewer is running", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -138,7 +138,7 @@ func (h *userReviewerHandler) DeactiveUser(c *gin.Context) {
 	}
 
 	// cheack id from get param and fetch data from service admin to check id admin and status account admin
-	// var adminInput campaign.AdminIdInput
+	// var adminInput reviewer.AdminIdInput
 	adminID := c.Param("admin_id")
 	adminInput := api_admin.AdminIdInput{UnixID: adminID}
 	getAdminValueId, err := api_admin.GetAdminId(adminInput)
@@ -192,7 +192,7 @@ func (h *userReviewerHandler) ActiveUser(c *gin.Context) {
 	}
 
 	// cheack id from get param and fetch data from service admin to check id admin and status account admin
-	// var adminInput campaign.AdminIdInput
+	// var adminInput reviewer.AdminIdInput
 	adminID := c.Param("admin_id")
 	adminInput := api_admin.AdminIdInput{UnixID: adminID}
 	getAdminValueId, err := api_admin.GetAdminId(adminInput)
@@ -224,6 +224,63 @@ func (h *userReviewerHandler) ActiveUser(c *gin.Context) {
 			return
 		}
 		response := helper.APIResponse("User has been active", http.StatusOK, "success", data)
+		c.JSON(http.StatusOK, response)
+	} else {
+		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+}
+
+// get info id admin not use middleware
+func (h *userReviewerHandler) GetInfoAdminID(c *gin.Context) {
+	var inputID core.GetUserIdInput
+
+	// check id is valid or not
+	err := c.ShouldBindUri(&inputID)
+	if err != nil {
+		response := helper.APIResponse("Failed get user admin and status", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	user, err := h.userService.GetUserByUnixID(inputID.UnixID)
+	if err != nil {
+		response := helper.APIResponse("Get user failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := core.FormatterUserReviewerID(user)
+
+	response := helper.APIResponse("Successfuly get user id and status", http.StatusOK, "success", formatter)
+	c.JSON(http.StatusOK, response)
+
+}
+
+func (h *userReviewerHandler) GetAllUserData(c *gin.Context) {
+	// cheack id from get param and fetch data from service admin to check id admin and status account admin
+	// var adminInput reviewer.AdminIdInput
+	adminID := c.Param("admin_id")
+	adminInput := api_admin.AdminIdInput{UnixID: adminID}
+	getAdminValueId, err := api_admin.GetAdminId(adminInput)
+
+	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
+
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if c.Param("admin_id") == getAdminValueId && currentAdmin.UnixAdmin == getAdminValueId {
+		users, err := h.userService.GetAllUsers()
+		if err != nil {
+			response := helper.APIResponse("Failed to get user", http.StatusBadRequest, "error", nil)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+		response := helper.APIResponse("List of user Reviewer", http.StatusOK, "success", users)
 		c.JSON(http.StatusOK, response)
 	} else {
 		response := helper.APIResponse("Your not Admin, cannot Access", http.StatusUnprocessableEntity, "error", nil)

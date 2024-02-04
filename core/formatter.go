@@ -98,3 +98,18 @@ func FormatterUserDetail(user User, updatedUser User) UserDetailFormatter {
 	}
 	return formatter
 }
+
+// get user admin status
+type UserReviewer struct {
+	UnixReviewer       string `json:"unix_reviewer"`
+	StatusAccountAdmin string `json:"status_account_reviewer"`
+}
+
+// get user reviewer status
+func FormatterUserReviewerID(user User) UserReviewer {
+	formatter := UserReviewer{
+		UnixReviewer:       user.UnixID,
+		StatusAccountAdmin: user.StatusAccount,
+	}
+	return formatter
+}

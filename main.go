@@ -54,10 +54,10 @@ func main() {
 	api.PUT("/admin/active_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.ActiveUser)
 
 	// make endpoint get all user by admin
-	// api.GET("/admin/get_all_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.GetAllUserData)
+	api.GET("/admin/get_all_user/:admin_id", middleware.AuthApiAdminMiddleware(authService, userReviewerService), userHandler.GetAllUserData)
 
 	// route give information to user about admin
-	// api.GET("/campaign/getUserReviewerID/:unix_id", userHandler.GetInfoAdminID)
+	api.GET("/reviewer/getUserReviewerID/:unix_id", userHandler.GetInfoAdminID)
 
 	// verify token
 	api.GET("/verifyTokenReviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.VerifyToken)

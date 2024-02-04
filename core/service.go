@@ -9,6 +9,8 @@ import (
 )
 
 type Service interface {
+	GetAllUsers() ([]User, error)
+
 	DeactivateAccountUser(input DeactiveUserInput, adminId string) (bool, error)
 	ActivateAccountUser(input DeactiveUserInput, adminId string) (bool, error)
 
@@ -35,6 +37,14 @@ type service struct {
 
 func NewService(repository Repository) *service {
 	return &service{repository}
+}
+
+func (s *service) GetAllUsers() ([]User, error) {
+	users, err := s.repository.GetAllUser()
+	if err != nil {
+		return users, err
+	}
+	return users, nil
 }
 
 func (s *service) DeactivateAccountUser(input DeactiveUserInput, adminId string) (bool, error) {
