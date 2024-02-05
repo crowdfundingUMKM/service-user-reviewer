@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -47,7 +46,7 @@ func (h *userReviewerHandler) GetLogtoAdmin(c *gin.Context) {
 	currentAdmin := c.MustGet("currentUserAdmin").(api_admin.AdminId)
 
 	if c.Param("admin_id") == getAdminValueId && currentAdmin.UnixAdmin == getAdminValueId {
-		content, err := ioutil.ReadFile("./tmp/gin.log")
+		content, err := os.ReadFile("./tmp/gin.log")
 		if err != nil {
 			response := helper.APIResponse("Failed to get log", http.StatusBadRequest, "error", nil)
 			c.JSON(http.StatusBadRequest, response)
@@ -58,7 +57,12 @@ func (h *userReviewerHandler) GetLogtoAdmin(c *gin.Context) {
 			c.Header("Content-Disposition", "attachment; filename=gin.log")
 			c.Data(http.StatusOK, "application/octet-stream", content)
 			return
+		} else if c.Query("download") == "false" {
+			response := helper.APIResponse("Failed to get log", http.StatusBadRequest, "error", nil)
+			c.JSON(http.StatusBadRequest, response)
+			return
 		}
+
 		// show in browser
 		c.String(http.StatusOK, string(content))
 	} else {

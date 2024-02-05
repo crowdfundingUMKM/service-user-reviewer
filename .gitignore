@@ -19,7 +19,7 @@ go.sum# If you prefer the allow list template instead of the deny list, see comm
 
 # enviroment
 .env
-
+/tmp/gin.log
 
 # Go workspace file
 go.work
