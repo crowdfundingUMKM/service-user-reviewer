@@ -50,3 +50,10 @@ type UpdatePasswordInput struct {
 	OldPassword string `json:"old_password" binding:"required"`
 	NewPassword string `json:"new_password" binding:"required"`
 }
+
+// notif
+type ReportToAdminInput struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	TypeError   string `json:"type_error" binding:"required"`
+}

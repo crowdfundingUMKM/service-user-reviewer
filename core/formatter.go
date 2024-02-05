@@ -113,3 +113,24 @@ func FormatterUserReviewerID(user User) UserReviewer {
 	}
 	return formatter
 }
+
+// Notif
+// notify formater
+type NotifyFormatter struct {
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	TypeError   string `json:"type_error"`
+	StatusNotif int    `json:"status_notif"`
+}
+
+func FormatterNotify(notify NotifReviewer) NotifyFormatter {
+	formatter := NotifyFormatter{
+		ID:          notify.ID,
+		Title:       notify.Title,
+		Description: notify.Description,
+		TypeError:   notify.TypeError,
+		StatusNotif: notify.StatusNotif,
+	}
+	return formatter
+}

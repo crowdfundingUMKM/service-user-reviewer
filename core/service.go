@@ -29,6 +29,10 @@ type Service interface {
 	SaveAvatar(UnixID string, fileLocation string) (User, error)
 
 	DeleteToken(UnixID string) (User, error)
+
+	// notif
+	ReportAdmin(UnixID string, input ReportToAdminInput) (NotifReviewer, error)
+	GetAllReports() ([]NotifReviewer, error)
 }
 
 type service struct {
@@ -291,4 +295,29 @@ func (s *service) DeleteToken(UnixID string) (User, error) {
 	}
 
 	return updatedUser, nil
+}
+
+// Notif
+func (s *service) ReportAdmin(UnixID string, input ReportToAdminInput) (NotifReviewer, error) {
+	notif := NotifReviewer{}
+	notif.UserReviewerId = UnixID
+	notif.Title = input.Title
+	notif.Description = input.Description
+	notif.TypeError = input.TypeError
+	notif.StatusNotif = 1
+
+	newNotif, err := s.repository.SaveReport(notif)
+	if err != nil {
+		return newNotif, err
+	}
+	return newNotif, nil
+}
+
+// get all users
+func (s *service) GetAllReports() ([]NotifReviewer, error) {
+	report, err := s.repository.GetAllReport()
+	if err != nil {
+		return report, err
+	}
+	return report, nil
 }

@@ -25,10 +25,10 @@ CREATE TABLE `users` (
 
 -- insert data
 
--- notif_campaign table
+-- notif_reviewer table
 CREATE TABLE `notif_reviwers` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
-    `user_campaign_id` CHAR(12) NOT NULL,
+    `user_reviewer_id` CHAR(12) NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `description` TEXT,
     `type_error` VARCHAR(11),

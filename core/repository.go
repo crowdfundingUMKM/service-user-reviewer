@@ -18,6 +18,10 @@ type Repository interface {
 
 	UpdatePassword(user User) (User, error)
 	UploadAvatarImage(user User) (User, error)
+
+	// Notif
+	SaveReport(report NotifReviewer) (NotifReviewer, error)
+	GetAllReport() ([]NotifReviewer, error)
 }
 
 type repository struct {
@@ -136,4 +140,26 @@ func (r *repository) UploadAvatarImage(user User) (User, error) {
 	}
 
 	return user, nil
+}
+
+func (r *repository) SaveReport(notifReviewer NotifReviewer) (NotifReviewer, error) {
+	err := r.db.Create(&notifReviewer).Error
+	if err != nil {
+		return notifReviewer, err
+	}
+	return notifReviewer, nil
+
+}
+
+// get all user
+func (r *repository) GetAllReport() ([]NotifReviewer, error) {
+	var notifReviewer []NotifReviewer
+
+	err := r.db.Find(&notifReviewer).Error
+
+	if err != nil {
+		return notifReviewer, err
+	}
+
+	return notifReviewer, nil
 }

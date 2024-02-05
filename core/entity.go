@@ -27,7 +27,7 @@ type User struct {
 
 type NotifReviewer struct {
 	ID             int       `json:"id"`
-	UserCampaignId string    `json:"user_reviewer_id"`
+	UserReviewerId string    `json:"user_reviewer_id"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
 	TypeError      string    `json:"type_error"`

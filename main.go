@@ -34,6 +34,7 @@ func main() {
 
 	// setup handler
 	userHandler := handler.NewUserHandler(userReviewerService, authService)
+	notifHandler := handler.NewNotifHandler(userReviewerService, authService)
 
 	// RUN SERVICE
 	router := gin.Default()
@@ -80,8 +81,8 @@ func main() {
 	api.DELETE("/logout_reviewer", middleware.AuthMiddleware(authService, userReviewerService), userHandler.LogoutUser)
 
 	// Notif route
-	// api.POST("/report_to_admin", middleware.AuthMiddleware(authService, userCampaignService), notifHandler.ReportToAdmin)
-	// api.GET("/admin/get_notif_admin", middleware.AuthApiAdminMiddleware(authService, userCampaignService), notifHandler.GetNotifToAdmin)
+	api.POST("/report_to_admin", middleware.AuthMiddleware(authService, userReviewerService), notifHandler.ReportToAdmin)
+	api.GET("/admin/get_notif_admin", middleware.AuthApiAdminMiddleware(authService, userReviewerService), notifHandler.GetNotifToAdmin)
 
 	url := fmt.Sprintf("%s:%s", os.Getenv("SERVICE_HOST"), os.Getenv("SERVICE_PORT"))
 	router.Run(url)
